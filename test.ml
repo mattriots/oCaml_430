@@ -17,6 +17,18 @@ and binding = Binding of string * value
 
 and env = binding list
 
+ let top_env = [
+      Binding ("+", PrimV "+");
+      Binding ("-", PrimV "-");
+      Binding ("*", PrimV "*");
+      Binding ("/", PrimV "/");
+      Binding ("<=", PrimV "<=");
+      Binding ("equal?", PrimV "equal?");
+      Binding ("true", BooleanV true);
+      Binding ("false", BooleanV false);
+      Binding ("error", PrimV "error");
+    ]
+
 let rec lookup env x =
   match env with
   | [] -> failwith ("Unbound variable: " ^ x)
@@ -61,21 +73,50 @@ and apply_primitive prim_name args =
   | ("error", _) -> failwith "Error primitive called"
   | _ -> failwith "Invalid primitive or incorrect number of arguments"
 
-  let simple_test () =
-    let top_env = [
-      Binding ("+", PrimV "+");
-      Binding ("-", PrimV "-");
-      Binding ("*", PrimV "*");
-      Binding ("/", PrimV "/");
-      Binding ("<=", PrimV "<=");
-      Binding ("equal?", PrimV "equal?");
-      Binding ("true", BooleanV true);
-      Binding ("false", BooleanV false);
-      Binding ("error", PrimV "error");
-    ] in
-    let result = interp (NumC 42.0) top_env in
-    assert (result = NumV 42.0)
+
+  let numC_test () =
+  let result = interp (NumC 42.0) top_env in
+  assert (result = NumV 42.0) 
   ;;
+
+  let stringC_test () =
+  let result = interp (StringC "hello world") top_env in
+  assert (result = StringV "hello world") ;;
+
+  let lamC_test () =
+  let result = interp (LamC (["x"], AppC (IdC "+", [IdC "x"; NumC 2.0]))) top_env in
+  match result with
+  | ClosV ([arg], body, env) ->
+      let arg_value = NumV 3.0 in
+      let new_env = Binding (arg, arg_value) :: env in
+      let final_result = interp body new_env in
+      assert (final_result = NumV 5.0)
+  | _ -> failwith "Expected a closure value" ;;
+
+let appC_test () =
+  let expr = AppC (IdC "+", [NumC 2.0; NumC 3.0]) in
+  let result = interp expr top_env in
+  assert (result = NumV 5.0) ;;
+
+
+let ifC_test () =
+let expr = IfC (IdC "true", NumC 42.0, NumC 100.0) in
+let result = interp expr top_env in
+assert (result = NumV 42.0);
+
+let expr2 = IfC (IdC "false", NumC 42.0, NumC 100.0) in
+let result2 = interp expr2 top_env in
+assert (result2 = NumV 100.0);
+
+let expr3 = IfC (StringC "non-boolean value", NumC 42.0, NumC 100.0) in
+assert (try interp expr3 top_env |> ignore; false with _ -> true) ;;
+
+
+ifC_test();;
+appC_test();;
+lamC_test ();;
+numC_test ();;
+stringC_test ();;
   
-simple_test ();;
+
 
