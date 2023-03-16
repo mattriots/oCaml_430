@@ -79,7 +79,7 @@ and apply_primitive prim_name args =
   assert (result = NumV 42.0) 
   ;;
 
-  let id_test () =
+  let idC_test () =
   let local_env = [
     Binding ("x", NumV 42.0);
     Binding ("y", StringV "hello");
@@ -132,11 +132,16 @@ let expr3 = IfC (StringC "non-boolean value", NumC 42.0, NumC 100.0) in
 assert (try interp expr3 top_env |> ignore; false with _ -> true) ;;
 
 
-ifC_test();;
-appC_test();;
-lamC_test ();;
 numC_test ();;
 stringC_test ();;
+idC_test ();;
+lamC_test ();;
+appC_test();;
+ifC_test();;
+
+
+
+
   
 
 
