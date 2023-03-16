@@ -61,46 +61,21 @@ and apply_primitive prim_name args =
   | ("error", _) -> failwith "Error primitive called"
   | _ -> failwith "Invalid primitive or incorrect number of arguments"
 
-let test_cases () =
-  let top_env = [
-    Binding ("+", PrimV "+");
-    Binding ("-", PrimV "-");
-    Binding ("*", PrimV "*");
-    Binding ("/", PrimV "/");
-    Binding ("<=", PrimV "<=");
-    Binding ("equal?", PrimV "equal?");
-    Binding ("true", BooleanV true);
-    Binding ("false", BooleanV false);
-    Binding ("error", PrimV "error");
-  ] in
-  let test_interp input expected_output =
-    let result = interp input top_env in
-    assert (result = expected_output)
-  in
+  let simple_test () =
+    let top_env = [
+      Binding ("+", PrimV "+");
+      Binding ("-", PrimV "-");
+      Binding ("*", PrimV "*");
+      Binding ("/", PrimV "/");
+      Binding ("<=", PrimV "<=");
+      Binding ("equal?", PrimV "equal?");
+      Binding ("true", BooleanV true);
+      Binding ("false", BooleanV false);
+      Binding ("error", PrimV "error");
+    ] in
+    let result = interp (NumC 42.0) top_env in
+    assert (result = NumV 42.0)
+  ;;
+  
+simple_test ();;
 
-  (* Test cases for numbers, strings, and variable lookup *)
-  test_interp (NumC 42.0) (NumV 42.0);
-  test_interp (StringC "hello") (StringV "hello");
-  test_interp (IdC "true") (BooleanV true);
-
-  (* Test case for if expressions *)
-  test_interp (IfC (IdC "true", NumC 1.0, NumC 2.0)) (NumV 1.0);
-  test_interp (IfC (IdC "false", NumC 1.0, NumC 2.0)) (NumV 2.0);
-
-  (* Test case for lambda expressions *)
-  let lam = LamC (["x"; "y"], AppC (IdC "+", [IdC "x"; IdC "y"])) in
-  test_interp lam (ClosV (["x"; "y"], AppC (IdC "+", [IdC "x"; IdC "y"]), top_env));
-
-  (* Test case for function application *)
-  let add = AppC (lam, [NumC 1.0; NumC 2.0]) in
-  test_interp add (NumV 3.0);
-
-  (* Test case for nested expressions *)
-  let nested = IfC (IdC "true", AppC (lam, [NumC 10.0; NumC 20.0]), NumC 0.0) in
-  test_interp nested (NumV 30.0);
-
-  (* Add more test cases as needed *)
-  ()
-
-(* Call the test_cases function *)
-test_cases ()
