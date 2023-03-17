@@ -120,17 +120,30 @@ let appC_test () =
 
 
 let ifC_test () =
-let expr = IfC (IdC "true", NumC 42.0, NumC 100.0) in
-let result = interp expr top_env in
-assert (result = NumV 42.0);
+  let expr = IfC (IdC "true", NumC 42.0, NumC 100.0) in
+  let result = interp expr top_env in
+  assert (result = NumV 42.0);
 
-let expr2 = IfC (IdC "false", NumC 42.0, NumC 100.0) in
-let result2 = interp expr2 top_env in
-assert (result2 = NumV 100.0);
+  let expr2 = IfC (IdC "false", NumC 42.0, NumC 100.0) in
+  let result2 = interp expr2 top_env in
+  assert (result2 = NumV 100.0);
 
-let expr3 = IfC (StringC "non-boolean value", NumC 42.0, NumC 100.0) in
-assert (try interp expr3 top_env |> ignore; false with _ -> true) ;;
+  let expr3 = IfC (StringC "non-boolean value", NumC 42.0, NumC 100.0) in
+  assert (try interp expr3 top_env |> ignore; false with _ -> true) ;;
 
+let env_test () =
+  let expr = AppC (
+    LamC (["x"; "y"],
+      AppC (IdC "+",
+        [IdC "x";
+         AppC (LamC (["x"],
+                 AppC (IdC "*",
+                   [IdC "x";
+                    NumC 2.0])),
+               [IdC "y"])])),
+    [NumC 3.0; NumC 4.0]) in
+    let result = interp expr top_env in
+    assert (result = NumV 11.0);;
 
 numC_test ();;
 stringC_test ();;
@@ -138,10 +151,3 @@ idC_test ();;
 lamC_test ();;
 appC_test();;
 ifC_test();;
-
-
-
-
-  
-
-
